@@ -1,0 +1,6 @@
+{
+  "name": "KidsFarmAI",
+  "description": "Autonomous children's song and music video generator powered by Claude, ElevenLabs, Higgsfield and Gemini.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
