@@ -263,7 +263,7 @@ export class QueueService {
       }
 
       // Ensure paths are ready
-      const musicPath = path.join(projectDir, "music.mp3");
+      let musicPath = path.join(projectDir, "music.mp3");
       const vocalsPath = path.join(projectDir, "vocals.wav");
       const songPath = path.join(projectDir, "song.wav");
       const subtitlePath = path.join(projectDir, "subtitles.ass");
@@ -290,9 +290,15 @@ export class QueueService {
             "Synthesizing high-quality procedural children's instrumental loop...",
             "STEP 3"
           );
+          musicPath = path.join(projectDir, "music.wav");
           await VideoService.synthesizeProceduralMusic(musicPath, project.duration);
         }
         await this.saveProjectMetadata(project);
+      } else {
+        const hasMp3 = await fs.stat(musicPath).then((s) => s.size > 0).catch(() => false);
+        if (!hasMp3) {
+          musicPath = path.join(projectDir, "music.wav");
+        }
       }
 
       // -----------------------------------------------------------------
@@ -329,6 +335,7 @@ export class QueueService {
           vocalsPath,
           musicPath,
           songPath,
+          project.duration,
           (msg) => this.writeLog(projectId, msg, "STEP 5")
         );
         await this.saveProjectMetadata(project);

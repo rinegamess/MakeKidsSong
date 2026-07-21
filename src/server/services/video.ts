@@ -171,11 +171,12 @@ ${events}`;
     vocalsPath: string,
     musicPath: string,
     outputPath: string,
+    duration: number,
     logFn: (msg: string) => void
   ): Promise<void> {
     logFn(`Mixing vocals and instrumental tracks...`);
-    const hasVocals = await fs.stat(vocalsPath).then(() => true).catch(() => false);
-    const hasMusic = await fs.stat(musicPath).then(() => true).catch(() => false);
+    const hasVocals = await fs.stat(vocalsPath).then((s) => s.size > 100).catch(() => false);
+    const hasMusic = await fs.stat(musicPath).then((s) => s.size > 100).catch(() => false);
 
     if (hasVocals && hasMusic) {
       // amix filter mixes inputs. We lower music volume slightly to keep vocals clear.
@@ -189,7 +190,9 @@ ${events}`;
       logFn("Only background music found, copying to final song output...");
       await fs.copyFile(musicPath, outputPath);
     } else {
-      throw new Error("No audio files available to mix.");
+      logFn(`No valid audio files available to mix. Generating a silent track of ${duration} seconds...`);
+      const cmd = `ffmpeg -y -f lavfi -i anullsrc=r=44100:cl=stereo -t ${duration} "${outputPath}"`;
+      await this.runCommand(cmd);
     }
     logFn(`Mixed audio successfully: ${outputPath}`);
   }
